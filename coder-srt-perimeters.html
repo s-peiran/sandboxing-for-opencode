@@ -1,0 +1,520 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Sandboxing perimeters — Coder + srt</title>
+<style>
+  :root {
+    --bg: #f6f7f9;
+    --surface: #ffffff;
+    --ink: #0f172a;
+    --ink-muted: #475569;
+    --line: #e2e8f0;
+    --line-strong: #cbd5e1;
+    --winner-bg: #ecfdf5;
+    --winner-border: #10b981;
+    --winner-ink: #065f46;
+    --alt-bg: #f8fafc;
+    --alt-ink: #64748b;
+    --accent: #2563eb;
+    --chip-bg: #eef2ff;
+    --chip-ink: #3730a3;
+    --shadow: 0 1px 2px rgba(15, 23, 42, .04), 0 4px 14px rgba(15, 23, 42, .06);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.5;
+    padding: 32px 24px 64px;
+  }
+  .page {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  header.intro {
+    margin-bottom: 28px;
+  }
+  header.intro h1 {
+    margin: 0 0 6px;
+    font-size: 26px;
+    letter-spacing: -0.01em;
+  }
+  header.intro p {
+    margin: 0;
+    color: var(--ink-muted);
+    font-size: 14px;
+  }
+  .row {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 22px 22px 24px;
+    margin-bottom: 22px;
+    box-shadow: var(--shadow);
+  }
+  .row-head {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    margin-bottom: 4px;
+  }
+  .row-head h2 {
+    margin: 0;
+    font-size: 18px;
+    letter-spacing: -0.005em;
+  }
+  .row-head .threat {
+    font-size: 13px;
+    color: var(--ink-muted);
+    text-align: left;
+  }
+  .preamble {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 18px 20px;
+    margin-bottom: 22px;
+    box-shadow: var(--shadow);
+  }
+  .preamble h3 {
+    margin: 0 0 8px;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+  }
+  .preamble ul {
+    margin: 0;
+    padding-left: 18px;
+    font-size: 13px;
+    color: var(--ink);
+  }
+  .preamble li { margin-bottom: 4px; }
+  .row-sub {
+    margin: 4px 0 18px;
+    color: var(--ink-muted);
+    font-size: 13.5px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 12px;
+  }
+  .grid.row2 {
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 14px;
+  }
+  .card {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 14px 14px 12px;
+    background: var(--alt-bg);
+    color: var(--alt-ink);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-height: 96px;
+    position: relative;
+  }
+  .card .name {
+    font-weight: 600;
+    color: var(--ink);
+    font-size: 14px;
+  }
+  .card .role {
+    font-size: 12px;
+    color: var(--ink-muted);
+    line-height: 1.4;
+  }
+  .card.winner {
+    background: var(--winner-bg);
+    border: 1.5px solid var(--winner-border);
+    color: var(--winner-ink);
+  }
+  .card.winner .name { color: var(--winner-ink); }
+  .card.winner .role { color: #047857; }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border-radius: 999px;
+    width: fit-content;
+  }
+  .badge.selected {
+    background: var(--winner-border);
+    color: white;
+  }
+  .badge.locked {
+    background: var(--chip-bg);
+    color: var(--chip-ink);
+  }
+  .badge.alt {
+    background: #e2e8f0;
+    color: #475569;
+  }
+  .badge.primitive {
+    background: #e2e8f0;
+    color: #475569;
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 8px;
+  }
+  .stats {
+    display: flex;
+    gap: 10px;
+    font-size: 12px;
+    color: var(--ink-muted);
+    margin-top: auto;
+    padding-top: 8px;
+    border-top: 1px dashed var(--line);
+  }
+  .winner .stats { border-top-color: #a7f3d0; color: #047857; }
+  .stats .dot { opacity: 0.4; }
+  .why {
+    margin-top: 16px;
+    padding: 12px 14px;
+    background: #f1f5f9;
+    border-left: 3px solid var(--accent);
+    border-radius: 6px;
+    font-size: 13px;
+    color: var(--ink);
+  }
+  .why strong { color: var(--ink); }
+  .why .label {
+    display: block;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+  .legend {
+    display: flex;
+    gap: 14px;
+    font-size: 12px;
+    color: var(--ink-muted);
+    margin-top: 14px;
+    flex-wrap: wrap;
+  }
+  .legend .swatch {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+  .swatch.winner { background: var(--winner-border); }
+  .swatch.alt { background: #cbd5e1; }
+  footer {
+    margin-top: 8px;
+    font-size: 11.5px;
+    color: var(--ink-muted);
+    text-align: center;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .prose {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 22px 26px 26px;
+    margin-bottom: 22px;
+    box-shadow: var(--shadow);
+    font-size: 14px;
+    color: var(--ink);
+  }
+  .prose h2 {
+    margin: 0 0 12px;
+    font-size: 18px;
+    letter-spacing: -0.005em;
+  }
+  .prose h3 {
+    margin: 22px 0 8px;
+    font-size: 15px;
+    letter-spacing: -0.003em;
+  }
+  .prose p {
+    margin: 0 0 10px;
+    line-height: 1.55;
+  }
+  .prose ul {
+    margin: 0 0 14px;
+    padding-left: 20px;
+  }
+  .prose li {
+    margin-bottom: 4px;
+    line-height: 1.5;
+  }
+  .prose figure {
+    margin: 22px 0 6px;
+    text-align: center;
+  }
+  .prose figure img {
+    max-width: 100%;
+    height: auto;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+  }
+  .prose figcaption {
+    font-size: 12px;
+    color: var(--ink-muted);
+    margin-top: 8px;
+  }
+  .prose pre {
+    background: #0f172a;
+    color: #e2e8f0;
+    padding: 14px 16px;
+    border-radius: 8px;
+    font-size: 12.5px;
+    line-height: 1.55;
+    overflow-x: auto;
+    margin: 10px 0 0;
+  }
+  .prose code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 12.5px;
+  }
+  .prose p code, .prose li code {
+    background: #eef2ff;
+    color: #3730a3;
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: 12px;
+  }
+  .prose em { color: var(--ink-muted); }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="intro">
+    <h1>Sandboxing for opencode</h1>
+  </header>
+
+  <section class="preamble">
+    <h3>Perimeter #2 criteria</h3>
+    <ul>
+      <li>Runs <em>inside</em> an existing workspace.</li>
+      <li>Constrains the agent's filesystem, network, and IPC reach.</li>
+      <li>Does not itself provide the workspace.</li>
+      <li>No nested virtualization or elevated privileges required.</li>
+    </ul>
+  </section>
+
+  <!-- ROW 1: PERIMETER #1 -->
+  <section class="row">
+    <div class="row-head">
+      <h2>Perimeter #1 &mdash; Fleet &harr; Host</h2>
+    </div>
+    <p class="row-sub">Outer isolation, infrastructure layer. Coder is the fixed choice;</p>
+
+    <div class="grid">
+      <div class="card winner">
+        <span class="badge selected">Selected &middot; non-negotiable</span>
+        <div class="name">Coder workspace</div>
+        <div class="role">VM or container</div>
+      </div>
+
+      <div class="card">
+        <div class="name">gVisor</div>
+        <div class="role">Userspace syscall-intercepting kernel (<code>runsc</code>)</div>
+      </div>
+
+      <div class="card">
+        <div class="name">Firecracker</div>
+        <div class="role">KVM-based microVM monitor</div>
+      </div>
+
+      <div class="card">
+        <div class="name">Kata Containers</div>
+        <div class="role">VM per container</div>
+      </div>
+
+      <div class="card">
+        <div class="name">microsandbox</div>
+        <div class="role">Embeddable microVM SDK</div>
+      </div>
+
+      <div class="card">
+        <div class="name">SmolVM</div>
+        <div class="role">Disposable per-call microVMs</div>
+      </div>
+
+      <div class="card">
+        <div class="name">E2B</div>
+        <div class="role">Hosted Firecracker microVMs</div>
+      </div>
+
+      <div class="card">
+        <div class="name">Daytona</div>
+        <div class="role">Hosted microVM platform</div>
+      </div>
+
+      <div class="card">
+        <div class="name">OpenSandbox</div>
+        <div class="role">Hosted Docker/k8s sandboxes</div>
+      </div>
+
+      <div class="card">
+        <div class="name">LiteBox</div>
+        <div class="role">Library OS / syscall shim (early-stage)</div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ROW 2: PERIMETER #2 -->
+  <section class="row">
+    <div class="row-head">
+      <h2>Perimeter #2 &mdash; Agent &harr; Workspace</h2>
+    </div>
+    <p class="row-sub">Inner isolation. Restricts what the agent can read, write, and reach over the network <em>within</em> the workspace. Three viable open-source options here.</p>
+
+    <div class="grid row2">
+      <div class="card winner">
+        <span class="badge selected">Winner</span>
+        <div class="name">anthropic-experimental / sandbox-runtime (srt)</div>
+        <div class="role">Seatbelt / bubblewrap + proxy</div>
+        <div class="stats">
+          <span>&#9733; 4,022 stars</span><span class="dot">&middot;</span><span>&#x2387; 290 forks</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="name">dagger / container-use</div>
+        <div class="role">Spawns a fresh container per agent task on its own git branch. </div>
+        <div class="stats">
+          <span>&#9733; 3,773 stars</span><span class="dot">&middot;</span><span>&#x2387; 192 forks</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="name">kubernetes-sigs / agent-sandbox</div>
+        <div class="role">A platform-side primitive operated by your infra team to provision agent runtimes; it isn't something an agent deploys from inside its own workspace.</div>
+        <div class="stats">
+          <span>&#9733; 2,119 stars</span><span class="dot">&middot;</span><span>&#x2387; 252 forks</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="why">
+      <span class="label">Why srt wins this row</span>
+      srt is the only one that actually targets the <strong>agent &harr; workspace</strong> boundary with the right weight: filesystem allow/deny lists, network domain allow/deny, no extra kernel or VM, no privileges. 
+    </div>
+
+    <div class="legend">
+      <span><span class="swatch winner"></span>Selected for this perimeter</span>
+      <span><span class="swatch alt"></span>Alternative / wrong layer</span>
+    </div>
+  </section>
+
+  <section class="prose">
+    <h1>Anthropic Sandbox Runtime philosophy</h1>
+
+    <p>Traditional permission-based security requires constant user approval for bash commands. While this provides control, it can lead to:</p>
+    <ul>
+      <li><strong>Approval fatigue:</strong> repeatedly clicking &ldquo;approve&rdquo; can cause users to pay less attention to what they&rsquo;re approving.</li>
+      <li><strong>Reduced productivity:</strong> constant interruptions slow down development workflows.</li>
+      <li><strong>Limited autonomy:</strong> Claude Code cannot work as efficiently when waiting for approvals.</li>
+    </ul>
+
+    <p>Sandboxing addresses these challenges by:</p>
+    <ul>
+      <li><strong>Defining clear boundaries:</strong> specify exactly which directories and network hosts Claude Code can access.</li>
+      <li><strong>Reducing permission prompts:</strong> safe commands within the sandbox don&rsquo;t require approval.</li>
+      <li><strong>Maintaining security:</strong> attempts to access resources outside the sandbox trigger immediate notifications.</li>
+      <li><strong>Enabling autonomy:</strong> Claude Code can run more independently within defined limits.</li>
+    </ul>
+
+    <h2>Reduced attack surface</h2>
+    <p>Sandboxing limits the potential damage from:</p>
+    <ul>
+      <li><strong>Malicious dependencies:</strong> NPM packages or other dependencies with harmful code.</li>
+      <li><strong>Compromised scripts:</strong> build scripts or tools with security vulnerabilities.</li>
+      <li><strong>Social engineering:</strong> attacks that trick users into running dangerous commands.</li>
+      <li><strong>Prompt injection:</strong> attacks that trick Claude into running dangerous commands.</li>
+    </ul>
+  </section>
+
+  <section class="prose">
+    <h2>Default filesystem permissions</h2>
+    <ul>
+      <li><strong>Read (deny-then-allow):</strong> allowed everywhere by default. You can deny broad regions, then re-allow specific paths within them. <em>allowRead takes precedence over denyRead.</em></li>
+      <li><strong>Write (allow-only):</strong> denied everywhere by default. You must explicitly allow paths.</li>
+    </ul>
+
+    <h3>Mandatory deny paths (auto-protected files)</h3>
+    <p>Certain sensitive files and directories are always blocked from writes, even if they fall within an allowed write path. This provides defense-in-depth against sandbox escapes and configuration tampering.</p>
+
+    <p><strong>Always-blocked files:</strong></p>
+    <ul>
+      <li>Shell config files: <code>.bashrc</code>, <code>.bash_profile</code>, <code>.zshrc</code>, <code>.zprofile</code>, <code>.profile</code></li>
+      <li>Git config files: <code>.gitconfig</code>, <code>.gitmodules</code></li>
+      <li>Other sensitive files: <code>.ripgreprc</code>, <code>.mcp.json</code></li>
+    </ul>
+
+    <p><strong>Always-blocked directories:</strong></p>
+    <ul>
+      <li>IDE directories: <code>.vscode/</code>, <code>.idea/</code></li>
+      <li>Git hooks and config: <code>.git/hooks/</code>, <code>.git/config</code></li>
+    </ul>
+
+    <figure>
+      <img src="claude-code-sandboxing.png" alt="Claude Code Sandboxing flow diagram showing user, Claude code, and sandbox layers with allow/deny filesystem and network controls." />
+      <figcaption>End-to-end flow: filesystem and network checks at the sandbox boundary, with proxy-mediated network and user prompts on unknown hosts.</figcaption>
+    </figure>
+
+    <h3>Filesystem isolation</h3>
+    <p><strong>Linux:</strong> uses <code>bubblewrap</code> with bind mounts, marking directories as read-only or read-write based on configuration.</p>
+<pre><code># On disk: /data/notes.txt contains "hello"
+mkdir /mnt/ro
+mount --bind -o ro /data /mnt/ro
+
+cat /mnt/ro/notes.txt              # "hello"  &#10003;
+echo "x" &gt;&gt; /mnt/ro/notes.txt      # &#10007; EROFS &mdash; kernel rejects writes via this mount
+echo "x" &gt;&gt; /data/notes.txt        # &#10003; writes succeed via the original path
+cat /mnt/ro/notes.txt              # "hello\nx"  &mdash; the change is visible here too</code></pre>
+
+    <h3>Network isolation</h3>
+    <p><em>Network traffic is routed through proxy servers running on the host.</em></p>
+    <p><strong>Linux:</strong> requests are routed via the filesystem over a Unix domain socket. The network namespace of the sandboxed process is removed entirely, so all network traffic must go through the proxies running on the host (listening on Unix sockets that are bind-mounted into the sandbox).</p>
+
+<pre><code>&#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472; INSIDE SANDBOX (empty netns + lo only) &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;
+&#9474;                                                            &#9474;
+&#9474;  curl &#9472;&#9472;AF_INET&#9472;&#9472;&#9658; 127.0.0.1:3128                          &#9474;   &#8592; yes, AF_INET still
+&#9474;                         &#9474;                                  &#9474;     exists here, but ONLY
+&#9474;                    sandbox-socat                           &#9474;     to the loopback
+&#9474;                         &#9474;                                  &#9474;
+&#9474;                    AF_UNIX                                 &#9474;   &#8592; socat translates
+&#9474;                         &#9474;                                  &#9474;
+&#9474;                    /run/srt/http.sock  &#9668;&#9472;&#9472; bind-mounted &#9472;&#9472;&#9472;&#9532;&#9472;&#9488;
+&#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496; &#9474;
+                                                               &#9474; same .sock file
+&#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472; ON THE HOST (full netns, NICs) &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488; &#9474;
+&#9474;                                                            &#9474; &#9474;
+&#9474;                    /run/srt/http.sock  &#9668;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9532;&#9472;&#9496;
+&#9474;                         &#9474;                                  &#9474;
+&#9474;                    AF_UNIX                                 &#9474;
+&#9474;                         &#9474;                                  &#9474;
+&#9474;                    host-socat                              &#9474;
+&#9474;                         &#9474;                                  &#9474;
+&#9474;                    AF_INET &#9472;&#9472;&#9472;&#9472;&#9472;&#9658; proxy &#9472;&#9472;&#9472;&#9472;&#9472;&#9658; internet    &#9474;   &#8592; back to AF_INET
+&#9474;                                                            &#9474;     for the real network
+&#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;</code></pre>
+  </section>
+</div>
+</body>
+</html>
