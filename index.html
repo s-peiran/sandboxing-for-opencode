@@ -426,17 +426,17 @@
 
     <p>Traditional permission-based security requires constant user approval for bash commands. While this provides control, it can lead to:</p>
     <ul>
-      <li><strong>Approval fatigue:</strong> repeatedly clicking &ldquo;approve&rdquo; can cause users to pay less attention to what they&rsquo;re approving.</li>
-      <li><strong>Reduced productivity:</strong> constant interruptions slow down development workflows.</li>
-      <li><strong>Limited autonomy:</strong> Claude Code cannot work as efficiently when waiting for approvals.</li>
+      <li><strong>Approval fatigue</strong></li>
+      <li><strong>Reduced productivity</strong></li>
+      <li><strong>Limited autonomy</strong></li>
     </ul>
 
     <p>Sandboxing addresses these challenges by:</p>
     <ul>
-      <li><strong>Defining clear boundaries:</strong> specify exactly which directories and network hosts Claude Code can access.</li>
-      <li><strong>Reducing permission prompts:</strong> safe commands within the sandbox don&rsquo;t require approval.</li>
-      <li><strong>Maintaining security:</strong> attempts to access resources outside the sandbox trigger immediate notifications.</li>
-      <li><strong>Enabling autonomy:</strong> Claude Code can run more independently within defined limits.</li>
+      <li><strong>Defining clear boundaries</strong></li>
+      <li><strong>Reducing permission prompts</strong></li>
+      <li><strong>Maintaining security</strong></li>
+      <li><strong>Enabling autonomy:</strong></li>
     </ul>
 
     <h2>Reduced attack surface</h2>
@@ -445,15 +445,16 @@
       <li><strong>Malicious dependencies:</strong> NPM packages or other dependencies with harmful code.</li>
       <li><strong>Compromised scripts:</strong> build scripts or tools with security vulnerabilities.</li>
       <li><strong>Social engineering:</strong> attacks that trick users into running dangerous commands.</li>
-      <li><strong>Prompt injection:</strong> attacks that trick Claude into running dangerous commands.</li>
+      <li><strong>Prompt injection:</strong> attacks that trick the agent into running dangerous commands.</li>
     </ul>
   </section>
 
   <section class="prose">
+    <h1>How it works</h1>
     <h2>Default filesystem permissions</h2>
     <ul>
-      <li><strong>Read (deny-then-allow):</strong> allowed everywhere by default. You can deny broad regions, then re-allow specific paths within them. <em>allowRead takes precedence over denyRead.</em></li>
-      <li><strong>Write (allow-only):</strong> denied everywhere by default. You must explicitly allow paths.</li>
+      <li><strong>Read:</strong> allowed everywhere by default. You can deny broad regions, then re-allow specific paths within them. <em>allowRead takes precedence over denyRead.</em></li>
+      <li><strong>Write:</strong> denied everywhere by default. You must explicitly allow paths.</li>
     </ul>
 
     <h3>Mandatory deny paths (auto-protected files)</h3>
