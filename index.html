@@ -317,7 +317,7 @@
   <!-- ROW 1: PERIMETER #1 -->
   <section class="row">
     <div class="row-head">
-      <h2>Perimeter #1 &mdash; Fleet &harr; Host</h2>
+      <h2>Perimeter #1 &mdash; Fleet/Host</h2>
     </div>
     <p class="row-sub">Outer isolation, infrastructure layer. Coder is the fixed choice;</p>
 
@@ -369,6 +369,11 @@
       </div>
 
       <div class="card">
+        <div class="name">kubernetes-sigs / agent-sandbox</div>
+        <div class="role">Kubernetes operator for long-lived agent Pods</div>
+      </div>
+
+      <div class="card">
         <div class="name">LiteBox</div>
         <div class="role">Library OS / syscall shim (early-stage)</div>
       </div>
@@ -379,14 +384,14 @@
   <!-- ROW 2: PERIMETER #2 -->
   <section class="row">
     <div class="row-head">
-      <h2>Perimeter #2 &mdash; Agent &harr; Workspace</h2>
+      <h2>Perimeter #2 &mdash; Agent/Workspace</h2>
     </div>
-    <p class="row-sub">Inner isolation. Restricts what the agent can read, write, and reach over the network <em>within</em> the workspace. Three viable open-source options here.</p>
+    <p class="row-sub">Inner isolation. Restricts what the agent can read, write, and reach over the network <em>within</em> the workspace. Two viable open-source options here.</p>
 
     <div class="grid row2">
       <div class="card winner">
         <span class="badge selected">Winner</span>
-        <div class="name">anthropic-experimental / sandbox-runtime (srt)</div>
+        <div class="name">Anthropic sandbox-runtime (srt)</div>
         <div class="role">Seatbelt / bubblewrap + proxy</div>
         <div class="stats">
           <span>&#9733; 4,022 stars</span><span class="dot">&middot;</span><span>&#x2387; 290 forks</span>
@@ -398,14 +403,6 @@
         <div class="role">Spawns a fresh container per agent task on its own git branch. </div>
         <div class="stats">
           <span>&#9733; 3,773 stars</span><span class="dot">&middot;</span><span>&#x2387; 192 forks</span>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="name">kubernetes-sigs / agent-sandbox</div>
-        <div class="role">A platform-side primitive operated by your infra team to provision agent runtimes; it isn't something an agent deploys from inside its own workspace.</div>
-        <div class="stats">
-          <span>&#9733; 2,119 stars</span><span class="dot">&middot;</span><span>&#x2387; 252 forks</span>
         </div>
       </div>
     </div>
